@@ -9,7 +9,7 @@ services:
     networks:
       - external_network
     volumes:
-      - ./config.js:/misskey-media-proxy/config.js
+      - ./config.js:/misskey-media-proxy/config.js:ro
 
 networks:
   external_network:
