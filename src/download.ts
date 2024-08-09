@@ -33,6 +33,10 @@ export const defaultDownloadConfig = {
 export async function downloadUrl(url: string, path: string, settings:DownloadConfig = defaultDownloadConfig): Promise<{
     filename: string;
 }> {
+    if (!isValidUrl(url)) {
+  		throw new StatusError('Invalid URL', 400);
+  	}
+
     if (process.env.NODE_ENV !== 'production') console.log(`Downloading ${url} to ${path} ...`);
 
     const timeout = 30 * 1000;
@@ -124,4 +128,25 @@ function isPrivateIp(ip: string, allowedPrivateNetworks: string[]): boolean {
     }
 
     return PrivateIp(ip) ?? false;
+}
+
+function isValidUrl(url: string | URL | undefined): boolean {
+	if (process.env.NODE_ENV !== 'production') return true;
+
+	try {
+		if (url == null) return false;
+
+		const u = typeof url === 'string' ? new URL(url) : url;
+		if (!u.protocol.match(/^https?:$/) || u.hostname === 'unix') {
+			return false;
+		}
+
+		if (u.port !== '' && !['80', '443'].includes(u.port)) {
+			return false;
+		}
+
+		return true;
+	} catch {
+		return false;
+	}
 }

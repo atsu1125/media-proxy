@@ -16,6 +16,9 @@ export const defaultDownloadConfig = {
     ...getAgents()
 };
 export async function downloadUrl(url, path, settings = defaultDownloadConfig) {
+    if (!isValidUrl(url)) {
+        throw new StatusError('Invalid URL', 400);
+    }
     if (process.env.NODE_ENV !== 'production')
         console.log(`Downloading ${url} to ${path} ...`);
     const timeout = 30 * 1000;
@@ -102,4 +105,23 @@ function isPrivateIp(ip, allowedPrivateNetworks) {
         }
     }
     return PrivateIp(ip) ?? false;
+}
+function isValidUrl(url) {
+    if (process.env.NODE_ENV !== 'production')
+        return true;
+    try {
+        if (url == null)
+            return false;
+        const u = typeof url === 'string' ? new URL(url) : url;
+        if (!u.protocol.match(/^https?:$/) || u.hostname === 'unix') {
+            return false;
+        }
+        if (u.port !== '' && !['80', '443'].includes(u.port)) {
+            return false;
+        }
+        return true;
+    }
+    catch {
+        return false;
+    }
 }
